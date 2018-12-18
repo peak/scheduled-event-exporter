@@ -6,11 +6,8 @@ go:
 services:
   - docker
 
-before_install:
-  - go get github.com/mattn/goveralls
-
 script:
-  - $HOME/gopath/bin/goveralls -v -service=travis-ci
+  - true
 
 after_success:
   - test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash

@@ -10,6 +10,12 @@ Travis Build
 
 [![Build Status](https://travis-ci.org/Kronin-Cloud/aws-events-exporter.svg?branch=master)](https://travis-ci.org/Kronin-Cloud/aws-events-exporter)
 
-Tests
+The exporter does following:
+Exports metrics with:
+label:
+instance_id of firing event
+value
 
-[![Coverage Status](https://coveralls.io/repos/github/Kronin-Cloud/aws-events-exporter/badge.svg?branch=master)](https://coveralls.io/github/Kronin-Cloud/aws-events-exporter?branch=master)
+Hours to scheduled event
+
+

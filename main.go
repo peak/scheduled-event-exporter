@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/common/version"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"net/http"
+	time2 "time"
 )
 
 const (
@@ -25,7 +26,7 @@ var (
 	scheduledEventsChecks = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "scheduled_events_status"),
 		"Amazon EC2 can schedule events for your instances related to hardware issues, software updates, or system maintenance.",
-		[]string{"instance", "date", "description", "code"}, nil,
+		[]string{"instance_id"}, nil,
 	)
 )
 
@@ -76,28 +77,11 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	for item := range ret.InstanceStatuses {
 		instance_id := *ret.InstanceStatuses[item].InstanceId
 		for _, event := range ret.InstanceStatuses[item].Events {
-			switch code := event.Code; *code {
-			case "instance-reboot":
-				ch <- prometheus.MustNewConstMetric(
-					scheduledEventsChecks, prometheus.GaugeValue, 1, instance_id, event.NotBefore.String(), *event.Description, *event.Code,
-				)
-			case "system-reboot":
-				ch <- prometheus.MustNewConstMetric(
-					scheduledEventsChecks, prometheus.GaugeValue, 2, instance_id, event.NotBefore.String(), *event.Description, *event.Code,
-				)
-			case "system-maintenance":
-				ch <- prometheus.MustNewConstMetric(
-					scheduledEventsChecks, prometheus.GaugeValue, 3, instance_id, event.NotBefore.String(), *event.Description, *event.Code,
-				)
-			case "instance-retirement", "instance-stop":
-				ch <- prometheus.MustNewConstMetric(
-					scheduledEventsChecks, prometheus.GaugeValue, 4, instance_id, event.NotBefore.String(), *event.Description, *event.Code,
-				)
-			default:
-				ch <- prometheus.MustNewConstMetric(
-					scheduledEventsChecks, prometheus.GaugeValue, 5, instance_id, event.NotBefore.String(), *event.Description, *event.Code,
-				)
-			}
+			// Time remaining in hours
+			timeRemain := event.NotBefore.Sub(time2.Now()).Hours()
+			ch <- prometheus.MustNewConstMetric(
+				scheduledEventsChecks, prometheus.GaugeValue, timeRemain, instance_id,
+			)
 			fmt.Println("Instance: " + instance_id)
 			fmt.Println(event)
 		}
