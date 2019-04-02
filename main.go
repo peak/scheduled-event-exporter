@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/common/version"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"net/http"
+	"strings"
 	time2 "time"
 )
 
@@ -79,6 +80,15 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		for _, event := range ret.InstanceStatuses[item].Events {
 			// Time remaining in hours
 			timeRemain := event.NotBefore.Sub(time2.Now()).Hours()
+			if strings.HasPrefix(*event.Description,"[C") {
+				fmt.Println("Instance has completed or canceled event: " + instance_id)
+				continue
+			}
+			if timeRemain < 0 {
+				// aws shows event for 7 further days
+				fmt.Println("Event is in past: " + instance_id)
+				continue
+			}
 			ch <- prometheus.MustNewConstMetric(
 				scheduledEventsChecks, prometheus.GaugeValue, timeRemain, instance_id,
 			)
@@ -92,7 +102,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 }
 
 func init() {
-	prometheus.MustRegister(version.NewCollector("aviatrix_exporter"))
+	prometheus.MustRegister(version.NewCollector("aws_scheduled_event"))
 }
 
 func main() {
@@ -103,7 +113,7 @@ func main() {
 	)
 
 	log.AddFlags(kingpin.CommandLine)
-	kingpin.Version(version.Print("aviatrix_exporter"))
+	kingpin.Version(version.Print("aws_scheduled_event"))
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
 
