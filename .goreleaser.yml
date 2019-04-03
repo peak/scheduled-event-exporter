@@ -1,15 +1,15 @@
 # .goreleaser.yml
 # Build customization
 builds:
-  - main: app.go
-binary: scheduled-event-exporter
-goos:
-  - windows
-  - darwin
-  - linux
-goarch:
-  - amd64
-  - arm64
+  - main: main.go
+    binary: schedul-event-exporter
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
 # Archive customization
 archive:
   format: tar.gz
