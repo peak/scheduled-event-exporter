@@ -2,7 +2,7 @@
 # Build customization
 builds:
   - main: main.go
-    binary: schedul-event-exporter
+    binary: scheduled-event-exporter
     goos:
       - windows
       - darwin
