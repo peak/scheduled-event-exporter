@@ -10,12 +10,10 @@ It only supports currently IAM roles, and only requires 1 IAM permission.
 #### Exported information
 
 Exports metrics with:
-label:
-instance_id of firing event
-value
 
-Hours to scheduled event
-
+| label   | value  |  
+|---|---|
+| instance_id of firing event  | Hours to the scheduled event  | 
 
 ####  Prometheus Alert examples
 
@@ -40,3 +38,7 @@ Hours to scheduled event
 ```
 
 #### Docker
+
+You can test quickly with running following command:
+
+`docker run peakcom/scheduled-event-exporter:latest`
