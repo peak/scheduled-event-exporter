@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -71,7 +70,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ret, err := e.client.DescribeInstanceStatus(params)
 	if err != nil {
 		upValue = 0
-		fmt.Println("Unable to DescribeInstanceStatus", err)
+		log.Errorln("Unable to DescribeInstanceStatus", err)
 	} else {
 		upValue = 1
 	}
@@ -80,20 +79,20 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		for _, event := range ret.InstanceStatuses[item].Events {
 			// Time remaining in hours
 			timeRemain := event.NotBefore.Sub(time2.Now()).Hours()
+			log.Debugln(event)
 			if strings.HasPrefix(*event.Description,"[C") {
-				fmt.Println("Instance has completed or canceled event: " + instance_id)
+				log.Infoln("Instance has completed or canceled event: " + instance_id)
 				continue
 			}
 			if timeRemain < 0 {
 				// aws shows event for 7 further days
-				fmt.Println("Event is in past: " + instance_id)
+				log.Infoln("Event is in past: " + instance_id)
 				continue
 			}
 			ch <- prometheus.MustNewConstMetric(
 				scheduledEventsChecks, prometheus.GaugeValue, timeRemain, instance_id,
 			)
-			fmt.Println("Instance: " + instance_id)
-			fmt.Println(event)
+			log.Debugln("Instance: " + instance_id)
 		}
 	}
 	ch <- prometheus.MustNewConstMetric(
